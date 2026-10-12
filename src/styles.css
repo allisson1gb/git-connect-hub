@@ -173,4 +173,5 @@
   --font-sans: "Barlow", sans-serif;
 }
 body { font-family: "Barlow", sans-serif; }
-.z-btn { @apply rounded-md border border-border bg-secondary/90 px-4 py-3 font-display text-xl tracking-wider text-secondary-foreground transition active:scale-95; }
+.z-btn { @apply rounded-md border border-border px-4 py-3 font-display text-xl tracking-wider transition active:scale-95; }
+.z-btn:not(.bg-primary) { @apply bg-secondary/90 text-secondary-foreground; }
