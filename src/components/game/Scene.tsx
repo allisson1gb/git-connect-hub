@@ -147,33 +147,32 @@ function Crates() {
   return <instancedMesh ref={ref} args={[undefined, undefined, loot.length]} castShadow receiveShadow><boxGeometry args={[0.8, 0.8, 0.8]} /><meshStandardMaterial map={tex} roughness={0.85} /></instancedMesh>;
 }
 
-function spawnZombie(z?: Zombie): Zombie {
+const typeFor = (i: number) => (["lento", "rapido", "lento", "resistente"] as ZType[])[i % 4];
+function spawnZombie(type: ZType, z?: Zombie): Zombie {
   for (let t = 0; t < 30; t++) {
     const a = Math.random() * Math.PI * 2, d = 22 + Math.random() * 40;
     const x = player.pos.x + Math.cos(a) * d, zz = player.pos.z + Math.sin(a) * d;
     if (Math.abs(x) > WORLD || Math.abs(zz) > WORLD || overlaps(x, zz, 0.6)) continue;
     const dang = regionAt(x, zz).perigo;
-    const r = Math.random();
-    const type: ZType = r < (dang >= 3 ? 0.35 : 0.1) ? "resistente" : r < 0.4 ? "rapido" : "lento";
     const T = ZTYPES[type];
     const o: Zombie = z ?? ({} as Zombie);
     Object.assign(o, { pos: new THREE.Vector3(x, 0, zz), type, hp: T.hp * (dang >= 3 ? 1.4 : 1), max: T.hp, speed: T.speed, dmg: T.dmg * (dang >= 3 ? 1.3 : 1), state: "vagar", target: new THREE.Vector3(x, 0, zz), atkT: 0, dead: false, deadT: 0, walk: Math.random() * 6, face: 0, hitT: 0, wanderT: 0 });
     return o;
   }
-  return z ?? spawnZombie();
+  const o: Zombie = z ?? ({} as Zombie); Object.assign(o, { pos: player.pos.clone().add(new THREE.Vector3(30, 0, 30)), type, hp: 1, max: 1, speed: 1, dmg: 1, state: "vagar", target: player.pos.clone(), atkT: 0, dead: true, deadT: 2, walk: 0, face: 0, hitT: 0, wanderT: 0 }); return o;
 }
 
 function ZombieAI() {
   useFrame((_, raw) => {
     if (S.screen !== "jogo") return;
     const dt = Math.min(raw, 0.05);
-    while (zombies.length < MAX_ZOMBIES) zombies.push(spawnZombie());
+    while (zombies.length < MAX_ZOMBIES) zombies.push(spawnZombie(typeFor(zombies.length)));
     const night = Math.sin(S.hora * Math.PI * 2) < 0;
     const p = player.pos;
     for (const z of zombies) {
-      if (z.dead) { z.deadT -= dt; if (z.deadT <= 0) spawnZombie(z); continue; }
+      if (z.dead) { z.deadT -= dt; if (z.deadT <= 0) spawnZombie(z.type, z); continue; }
       const dx = p.x - z.pos.x, dz = p.z - z.pos.z, d = Math.hypot(dx, dz);
-      if (d > 90) { spawnZombie(z); continue; }
+      if (d > 90) { spawnZombie(z.type, z); continue; }
       z.atkT -= dt; z.hitT -= dt;
       const range = (night ? 24 : 15) * (S.agachar ? 0.55 : 1) * (S.clima === "neblina" ? 0.7 : 1);
       if (!S.dead && d < range && (d < 4 || lineOfSight(z.pos.x, z.pos.z, p.x, p.z))) z.state = d < 1.5 ? "atacar" : "perseguir";
@@ -207,11 +206,11 @@ function ZombieAI() {
 function ZombieView({ i }: { i: number }) {
   const g = useRef<THREE.Group>(null); const inner = useRef<THREE.Group>(null);
   const rig = useRef<Rig>({ la: null, ra: null, ll: null, rl: null });
-  const type = (["lento", "rapido", "lento", "resistente"] as ZType[])[i % 4];
+  const type = typeFor(i);
   const T = ZTYPES[type];
   useFrame(() => {
     const z = zombies[i]; if (!g.current) return;
-    if (!z || z.type !== type) { g.current.visible = false; if (z && z.dead === false && z.type !== type) z.type = type, z.speed = T.speed, z.hp = z.max = T.hp * (z.hp > z.max ? 1.4 : 1), z.dmg = T.dmg; return; }
+    if (!z) { g.current.visible = false; return; }
     g.current.visible = true;
     g.current.position.copy(z.pos); g.current.rotation.y = z.face;
     inner.current!.rotation.x = z.dead ? -Math.min(Math.PI / 2, (4 - z.deadT) * 4) : 0;
