@@ -117,7 +117,7 @@ function City() {
       <instancedMesh ref={padRef} args={[undefined, undefined, pads.length]} receiveShadow><boxGeometry args={[BLOCK, 0.14, BLOCK]} /><meshStandardMaterial map={padTex} roughness={0.95} /></instancedMesh>
       {buildings.map((b, i) => (
         <group key={i}>
-          <mesh position={[b.x, b.h / 2, b.z]} castShadow receiveShadow><boxGeometry args={[b.w, b.h, b.d]} /><meshStandardMaterial map={bTex[i]} color={b.color} roughness={0.9} /></mesh>
+          <mesh position={[b.x, b.h / 2, b.z]} castShadow receiveShadow><boxGeometry args={[b.w, b.h, b.d]} /><meshStandardMaterial map={bTex[i] ?? null} color={b.color} roughness={0.9} /></mesh>
           {b.roof && <mesh position={[b.x, b.h + 0.9, b.z]} rotation-y={Math.PI / 4} castShadow><coneGeometry args={[Math.max(b.w, b.d) * 0.75, 1.8, 4]} /><meshStandardMaterial color="#5b3a2c" roughness={0.9} /></mesh>}
         </group>
       ))}
@@ -147,7 +147,8 @@ function Crates() {
   return <instancedMesh ref={ref} args={[undefined, undefined, loot.length]} castShadow receiveShadow><boxGeometry args={[0.8, 0.8, 0.8]} /><meshStandardMaterial map={tex} roughness={0.85} /></instancedMesh>;
 }
 
-const typeFor = (i: number) => (["lento", "rapido", "lento", "resistente"] as ZType[])[i % 4];
+const ZORDER: ZType[] = ["lento", "rapido", "lento", "resistente"];
+const typeFor = (i: number): ZType => ZORDER[i % 4] ?? "lento";
 function spawnZombie(type: ZType, z?: Zombie): Zombie {
   for (let t = 0; t < 30; t++) {
     const a = Math.random() * Math.PI * 2, d = 22 + Math.random() * 40;
@@ -350,7 +351,7 @@ function Sky() {
     if (hemi.current) hemi.current.intensity = 0.35 + dayAmt * 0.7;
     if (rain.current) {
       rain.current.visible = S.clima === "chuva";
-      if (rain.current.visible) { const p = rainGeo.attributes.position as THREE.BufferAttribute; for (let i = 0; i < p.count; i++) { let y = p.getY(i) - 28 * dt; if (y < -20) y += 40; p.setY(i, y); } p.needsUpdate = true; rain.current.position.set(player.pos.x, player.pos.y + 15, player.pos.z); }
+      if (rain.current.visible) { const p = rainGeo.getAttribute("position") as THREE.BufferAttribute; for (let i = 0; i < p.count; i++) { let y = p.getY(i) - 28 * dt; if (y < -20) y += 40; p.setY(i, y); } p.needsUpdate = true; rain.current.position.set(player.pos.x, player.pos.y + 15, player.pos.z); }
     }
   });
   return (

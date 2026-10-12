@@ -4,14 +4,15 @@ function mulberry(seed: number) {
   return () => { seed |= 0; seed = (seed + 0x6d2b79f5) | 0; let t = Math.imul(seed ^ (seed >>> 15), 1 | seed); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
 }
 const R = mulberry(1337);
-const pick = <T,>(a: T[]) => a[Math.floor(R() * a.length)];
+const pick = <T,>(a: T[]): T => a[Math.floor(R() * a.length)] as T;
 
 export type Box = { x: number; z: number; w: number; d: number; h: number; color: string; roof?: boolean };
 export const BLOCK = 34, ROAD = 12, N = 3, CELL = BLOCK + ROAD;
 export const WORLD = (N + 0.5) * CELL;
 
-type Reg = { id: string; nome: string; pad: string; perigo: number };
-export const REGIOES: Record<string, Reg> = {
+export type RegId = "central" | "resid" | "comercial" | "industrial" | "militar" | "floresta";
+type Reg = { id: RegId; nome: string; pad: string; perigo: number };
+export const REGIOES: Record<RegId, Reg> = {
   central: { id: "central", nome: "Cidade Central", pad: "#55575a", perigo: 2 },
   resid: { id: "resid", nome: "Bairro Residencial", pad: "#4a5639", perigo: 1 },
   comercial: { id: "comercial", nome: "Zona Comercial", pad: "#615d55", perigo: 2 },
@@ -36,11 +37,11 @@ export const buildings: Box[] = [];
 export const cars: Box[] = [];
 export const trees: { x: number; z: number; s: number }[] = [];
 export const pads: { x: number; z: number; color: string }[] = [];
-export type Loot = { x: number; z: number; reg: string; empty: boolean; respawn: number };
+export type Loot = { x: number; z: number; reg: RegId; empty: boolean; respawn: number };
 export const loot: Loot[] = [];
 export const rubble: { x: number; z: number; s: number; r: number }[] = [];
 
-const PAL: Record<string, string[]> = {
+const PAL: Record<RegId, string[]> = {
   central: ["#8d8a83", "#6f7377", "#9a8f7e", "#7c7468"],
   resid: ["#b3a68c", "#9c8f7a", "#a88d78", "#8e9a8c"],
   comercial: ["#a39b8a", "#8b8e86", "#a07f62"],
@@ -104,7 +105,7 @@ for (let k = 0; k < 400; k++) {
   if (!overlaps(x, z, 0.3)) rubble.push({ x, z, s: 0.15 + R() * 0.5, r: R() * 3 });
 }
 
-const TABELA: Record<string, [ItemId, number][]> = {
+const TABELA: Record<RegId, [ItemId, number][]> = {
   central: [["agua", 3], ["comida", 3], ["curativo", 2], ["pano", 2], ["sucata", 1]],
   resid: [["comida", 4], ["agua", 4], ["pano", 3], ["madeira", 2]],
   comercial: [["comida", 4], ["agua", 4], ["curativo", 2], ["pano", 2]],
@@ -112,9 +113,9 @@ const TABELA: Record<string, [ItemId, number][]> = {
   militar: [["curativo", 4], ["faca", 2], ["sucata", 2], ["comida", 2]],
   floresta: [["madeira", 6], ["agua", 2], ["pano", 1]],
 };
-export function rollLoot(reg: string): ItemId[] {
-  const t = TABELA[reg] ?? TABELA.central, tot = t.reduce((a, [, w]) => a + w, 0);
-  const n = 1 + Math.floor(Math.random() * (REGIOES[reg]?.perigo >= 3 ? 3 : 2)), out: ItemId[] = [];
+export function rollLoot(reg: RegId): ItemId[] {
+  const t = TABELA[reg], tot = t.reduce((a, [, w]) => a + w, 0);
+  const n = 1 + Math.floor(Math.random() * (REGIOES[reg].perigo >= 3 ? 3 : 2)), out: ItemId[] = [];
   for (let i = 0; i < n; i++) { let r = Math.random() * tot; for (const [id, w] of t) { r -= w; if (r <= 0) { out.push(id); break; } } }
   return out;
 }
