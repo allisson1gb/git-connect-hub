@@ -77,8 +77,8 @@ export function HUD() {
       <div className="absolute left-3 top-3 space-y-1 rounded-md bg-hud/60 p-2">
         <Bar label="Vida" v={s.hp} cls="bg-destructive" />
         <Bar label="Fome" v={s.fome} cls="bg-primary" />
-        <Bar label="Sede" v={s.sede} cls="bg-sky-500" />
-        <Bar label="Energia" v={s.energia} cls="bg-lime-500" />
+        <Bar label="Sede" v={s.sede} cls="bg-thirst" />
+        <Bar label="Energia" v={s.energia} cls="bg-stamina" />
         <p className="pt-1 text-[10px]">{s.regiao} · {String(h).padStart(2, "0")}h {night ? "· NOITE" : ""} · {s.clima}</p>
         {m && <p className="max-w-[12rem] text-[10px] text-primary">Objetivo: {m.titulo} ({Math.min(m.meta, m.prog())}/{m.meta})</p>}
       </div>

@@ -142,3 +142,35 @@
     color: var(--color-foreground);
   }
 }
+
+/* Sobrevivência Z theme */
+:root, .dark {
+  --background: oklch(0.17 0.01 90);
+  --foreground: oklch(0.94 0.01 90);
+  --card: oklch(0.24 0.01 90);
+  --card-foreground: oklch(0.94 0.01 90);
+  --popover: oklch(0.2 0.01 90);
+  --popover-foreground: oklch(0.94 0.01 90);
+  --primary: oklch(0.72 0.15 65);
+  --primary-foreground: oklch(0.18 0.02 60);
+  --secondary: oklch(0.32 0.01 90);
+  --secondary-foreground: oklch(0.92 0.01 90);
+  --muted-foreground: oklch(0.7 0.01 90);
+  --destructive: oklch(0.55 0.19 28);
+  --destructive-foreground: oklch(0.97 0 0);
+  --border: oklch(0.36 0.01 90);
+  --hud: oklch(0.15 0.01 90 / 0.85);
+  --hud-foreground: oklch(0.95 0.01 90);
+  --thirst: oklch(0.65 0.12 230);
+  --stamina: oklch(0.72 0.15 135);
+}
+@theme inline {
+  --color-hud: var(--hud);
+  --color-hud-foreground: var(--hud-foreground);
+  --color-thirst: var(--thirst);
+  --color-stamina: var(--stamina);
+  --font-display: "Bebas Neue", sans-serif;
+  --font-sans: "Barlow", sans-serif;
+}
+body { font-family: "Barlow", sans-serif; }
+.z-btn { @apply rounded-md border border-border bg-secondary/90 px-4 py-3 font-display text-xl tracking-wider text-secondary-foreground transition active:scale-95; }
